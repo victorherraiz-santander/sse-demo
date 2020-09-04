@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSE Demo</title>
+</head>
+<body>
+    <h1>SSE Demo</h1>
+    <form id="f1">
+        <p><input name="msg" type="text"> <button type="submit">send</button></p>
+    </form>
+    <div id="output"></div>
+</body>
+<script>
+'use strict'
+
+const root = document.getElementById('output')
+function write (msg) {
+    const node = document.createElement('p')
+    node.append(msg)
+    root.prepend(node)
+}
+
+const form = document.getElementById('f1')
+form.onsubmit = sendMessage
+
+function sendMessage(evt) {
+    evt.preventDefault()
+    const { value } = form.elements['msg']
+    fetch('/messages', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'text/plain'
+        },
+        body: value
+    }).then(console.log, console.error)
+
+}
+
+const source = new EventSource('/stream')
+source.onopen = () => write('Connected')
+source.onerror = console.error
+source.onmessage = (msg) => write('message: ' + JSON.parse(msg.data))
+</script>
+</html>
